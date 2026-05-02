@@ -71,7 +71,7 @@ public class MoneyCommand {
     }
 
 
-    @Command("pay <player> <amount>")
+    @Command("pay <players> <amount>")
     @CommandDescription("Überweise Geld an einen Spieler")
     public CompletableFuture<Void> pay(PlayerSource sender, Either<OnlineUsers, EssentialsOfflineUser> players, int amount) {
         return players.mapEither(
