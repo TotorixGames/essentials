@@ -23,6 +23,7 @@ import org.incendo.cloud.annotations.Permission;
 import org.incendo.cloud.annotations.processing.CommandContainer;
 import org.incendo.cloud.paper.util.sender.PlayerSource;
 import org.incendo.cloud.paper.util.sender.Source;
+import org.incendo.cloud.type.Either;
 
 import java.time.Instant;
 import java.util.List;
@@ -70,8 +71,16 @@ public class MoneyCommand {
     }
 
 
-    @Command("pay <players> <amount>")
-    @CommandDescription("überweise Geld an mehrere Spieler")
+    @Command("pay <player> <amount>")
+    @CommandDescription("Überweise Geld an einen Spieler")
+    public CompletableFuture<Void> pay(PlayerSource sender, Either<OnlineUsers, EssentialsOfflineUser> players, int amount) {
+        return players.mapEither(
+                onlineUsers -> payMulti(sender, onlineUsers, amount),
+                offlineUser -> paySingle(sender, offlineUser, amount)
+        );
+    }
+
+
     public CompletableFuture<Void> payMulti(PlayerSource sender, OnlineUsers players, int amount) {
         if (amount < 1) {
             throw ComponentException.translatable("essentials.money.pay.amount-too-low");
@@ -109,8 +118,7 @@ public class MoneyCommand {
                 });
     }
 
-    @Command("pay <player> <amount>")
-    @CommandDescription("Überweise Geld an einen Spieler")
+
     public CompletableFuture<Void> paySingle(PlayerSource sender, EssentialsOfflineUser player, int amount) {
         if (amount < 1) {
             throw ComponentException.translatable("essentials.money.pay.amount-too-low");
