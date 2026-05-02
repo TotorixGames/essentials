@@ -1,17 +1,12 @@
 package de.kalypzo.essentials.command.chat;
 
-import de.kalypzo.essentials.command.CommandLoader;
 import de.kalypzo.essentials.EssentialsPlugin;
 import de.kalypzo.essentials.util.Text;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.processing.CommandContainer;
-import org.incendo.cloud.paper.util.sender.Source;
+import studio.mevera.imperat.BukkitCommandSource;
+import studio.mevera.imperat.annotations.types.Execute;
+import studio.mevera.imperat.annotations.types.RootCommand;
 
-/**
- * <p>Provides all commands related to private messages / reply </p>
- * <p>Because of @CommandContainer it gets instantiated by {@link CommandLoader}</p>
- */
-@CommandContainer
+@RootCommand("info")
 public class InfoCommand {
     private final EssentialsPlugin plugin;
 
@@ -19,11 +14,10 @@ public class InfoCommand {
         this.plugin = EssentialsPlugin.instance();
     }
 
-    @Command("info")
-    public void info(Source source) {
+    @Execute
+    public void info(BukkitCommandSource source) {
         plugin.getConfig().getString("info-message", "info-message in config.yml not set.").lines().forEach(line -> {
-            source.source().sendMessage(Text.deserialize(line));
+            source.origin().sendMessage(Text.deserialize(line));
         });
     }
-
 }

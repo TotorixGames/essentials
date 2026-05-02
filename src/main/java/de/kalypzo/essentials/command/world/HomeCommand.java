@@ -1,7 +1,6 @@
 package de.kalypzo.essentials.command.world;
 
 import de.kalypzo.essentials.EssentialsPlugin;
-import de.kalypzo.essentials.command.CommandLoader;
 import de.kalypzo.essentials.event.PlayerSetHomeEvent;
 import de.kalypzo.essentials.exception.BadConfigurationException;
 import de.kalypzo.essentials.gui.home.GuiHomes;
@@ -11,48 +10,52 @@ import de.kalypzo.essentials.world.NetworkPosition;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.translation.Argument;
 import org.bukkit.entity.Player;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.CommandDescription;
-import org.incendo.cloud.annotations.Permission;
-import org.incendo.cloud.annotations.processing.CommandContainer;
-import org.incendo.cloud.paper.util.sender.PlayerSource;
+import studio.mevera.imperat.annotations.types.Description;
+import studio.mevera.imperat.annotations.types.Execute;
+import studio.mevera.imperat.annotations.types.Permission;
+import studio.mevera.imperat.annotations.types.RootCommand;
+import studio.mevera.imperat.annotations.types.SubCommand;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Set home and teleport to it.
- * <p>Because of @CommandContainer it gets instantiated by {@link CommandLoader}</p>
- *
- */
-@CommandContainer
+@RootCommand({"home", "homes"})
 public class HomeCommand {
 
-    @Command("home|homes")
+    @Execute
     @Permission("essentials.command.homes")
-    public void openHomeGui(PlayerSource playerSource) {
+    public void openHomeGui(Player playerSource) {
         try {
-            new GuiHomes(playerSource.source(), HomeManager.getInstance()).open();
+            new GuiHomes(playerSource, HomeManager.getInstance()).open();
         } catch (BadConfigurationException e) {
-            EssentialsPlugin.instance().getSLF4JLogger().error("Failed to open home GUI for player {}", playerSource.source().getName(), e);
-            playerSource.source().sendMessage(Component.translatable("essentials.homes.gui.config-error"));
+            EssentialsPlugin.instance().getSLF4JLogger().error("Failed to open home GUI for player {}", playerSource.getName(), e);
+            playerSource.sendMessage(Component.translatable("essentials.homes.gui.config-error"));
         }
     }
 
-    @Command("home|homes <home>")
+    @Execute
     @Permission("essentials.command.homes.tp")
-    @CommandDescription("Teleportiert den Spieler zu seinem Home")
-    public void teleportHome(PlayerSource player, Home home) {
-        player.source().sendMessage(Component.translatable("essentials.homes.teleport",
+    @Description("Teleportiert den Spieler zu seinem Home")
+    public void teleportHome(Player player, Home home) {
+        player.sendMessage(Component.translatable("essentials.homes.teleport",
                 Argument.component("name", Component.text(home.name()))));
-        home.teleport(player.source());
+        home.teleport(player);
     }
 
-    @Command("home|homes set <name>")
-    @Command("sethome <name>")
+    @SubCommand("set")
     @Permission("essentials.command.homes.set")
-    @CommandDescription("Erstellt ein Home auf der aktuellen Position")
-    public CompletableFuture<Void> setHome(PlayerSource playerSource, String name) {
-        Player player = playerSource.source();
+    @Description("Erstellt ein Home auf der aktuellen Position")
+    public CompletableFuture<Void> setHome(Player playerSource, String name) {
+        return doSetHome(playerSource, name);
+    }
+
+    @SubCommand("delete")
+    @Permission("essentials.command.homes.set")
+    @Description("Löscht ein Home")
+    public CompletableFuture<Void> deleteHome(Player player, Home home) {
+        return doDeleteHome(player, home);
+    }
+
+    static CompletableFuture<Void> doSetHome(Player player, String name) {
         var event = new PlayerSetHomeEvent(player);
         if (!event.callEvent()) {
             return CompletableFuture.completedFuture(null);
@@ -63,8 +66,8 @@ public class HomeCommand {
                     Argument.numeric("amount", maxHomes)));
             return CompletableFuture.completedFuture(null);
         }
-        return HomeManager.getInstance().getHomes(player.getUniqueId()).thenCompose((homes -> HomeManager.getInstance().getHome(player.getUniqueId(), name)
-                .thenCompose(existing -> {
+        return HomeManager.getInstance().getHomes(player.getUniqueId()).thenCompose(homes ->
+                HomeManager.getInstance().getHome(player.getUniqueId(), name).thenCompose(existing -> {
                     if (homes.size() >= maxHomes && existing.isEmpty()) {
                         player.sendMessage(Component.translatable("essentials.homes.set.max-reached",
                                 Argument.numeric("amount", maxHomes)));
@@ -74,24 +77,14 @@ public class HomeCommand {
                                     player.getUniqueId(),
                                     name,
                                     NetworkPosition.createByLocation(player.getLocation())))
-                            .thenAccept(_void -> {
-                                player.sendMessage(Component.translatable("essentials.homes.set.success",
-                                        Argument.component("name", Component.text(name))));
-                            });
-                })));
+                            .thenAccept(_void -> player.sendMessage(Component.translatable("essentials.homes.set.success",
+                                    Argument.component("name", Component.text(name)))));
+                }));
     }
 
-
-    @Command("home|homes delete <home>")
-    @Command("delhome <home>")
-    @Permission("essentials.command.homes.set")
-    @CommandDescription("Löscht ein Home")
-    public CompletableFuture<Void> deleteHome(PlayerSource player, Home home) {
-        return HomeManager.getInstance().deleteHome(home).thenAccept(_void -> {
-            player.source().sendMessage(Component.translatable("essentials.homes.delete.success",
-                    Argument.component("name", Component.text(home.name()))));
-        });
+    static CompletableFuture<Void> doDeleteHome(Player player, Home home) {
+        return HomeManager.getInstance().deleteHome(home).thenAccept(_void ->
+                player.sendMessage(Component.translatable("essentials.homes.delete.success",
+                        Argument.component("name", Component.text(home.name())))));
     }
-
-
 }

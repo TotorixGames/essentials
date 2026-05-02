@@ -1,44 +1,32 @@
 package de.kalypzo.essentials.command.user;
 
-import de.kalypzo.essentials.command.CommandLoader;
-import net.kyori.adventure.text.Component;
 import de.kalypzo.essentials.EssentialsPlugin;
 import de.kalypzo.essentials.user.UserSettings;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.processing.CommandContainer;
-import org.incendo.cloud.paper.util.sender.PlayerSource;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
+import studio.mevera.imperat.annotations.types.RootCommand;
+import studio.mevera.imperat.annotations.types.SubCommand;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- *
- * <p>Because of @CommandContainer it gets instantiated by {@link CommandLoader}</p>
- */
-@CommandContainer
+@RootCommand({"settings", "einstellungen"})
 public class SettingsCommand {
 
-    @Command("settings togglePing")
-    @Command("einstellungen togglePing")
-    @Command("togglePing")
-    public CompletableFuture<Void> togglePingSounds(PlayerSource source) {
-        var settings = getSettings(source);
+    @SubCommand("togglePing")
+    public CompletableFuture<Void> togglePingSounds(Player source) {
+        return togglePing(source);
+    }
+
+    static CompletableFuture<Void> togglePing(Player source) {
+        var settings = UserSettings.of(source.getUniqueId());
         boolean isDisabled = settings.disabledPingSound();
         return settings.disabledPingSound(!isDisabled).thenRun(() -> {
-            if (isDisabled) { //
-
-                source.source().sendMessage(Component.translatable("essentials.settings.ping-active"));
-                EssentialsPlugin.instance().getChatSystem().playPingSound(source.source());
+            if (isDisabled) {
+                source.sendMessage(Component.translatable("essentials.settings.ping-active"));
+                EssentialsPlugin.instance().getChatSystem().playPingSound(source);
             } else {
-                source.source().sendMessage(Component.translatable("essentials.settings.ping-disabled"));
+                source.sendMessage(Component.translatable("essentials.settings.ping-disabled"));
             }
         });
-
-
-
     }
-
-    private static UserSettings getSettings(PlayerSource source) {
-        return UserSettings.of(source.source().getUniqueId());
-    }
-
 }

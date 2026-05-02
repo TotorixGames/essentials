@@ -1,34 +1,27 @@
 package de.kalypzo.essentials.command.user;
 
-import de.kalypzo.essentials.command.CommandLoader;
 import net.kyori.adventure.text.Component;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.CommandDescription;
-import org.incendo.cloud.annotations.Permission;
-import org.incendo.cloud.annotations.processing.CommandContainer;
-import org.incendo.cloud.paper.util.sender.PlayerSource;
+import org.bukkit.entity.Player;
+import studio.mevera.imperat.annotations.types.Description;
+import studio.mevera.imperat.annotations.types.Execute;
+import studio.mevera.imperat.annotations.types.Permission;
+import studio.mevera.imperat.annotations.types.RootCommand;
 
-/**
- * <p>Because of @CommandContainer it gets instantiated by {@link CommandLoader}</p>
- */
-@CommandContainer
+@RootCommand("fly")
+@Permission("essentials.command.fly")
+@Description("Aktiviert den Flugmodus")
 public class FlyCommand {
 
-    @Command("fly")
-    @Permission("essentials.command.fly")
-    @CommandDescription("Aktiviert den Flugmodus")
-    public void fly(PlayerSource source) {
-        if (source.source().isFlying()) {
-            source.source().setFlying(false);
-            source.source().setAllowFlight(false);
-            source.source().sendMessage(Component.translatable("essentials.fly.disabled"));
-
+    @Execute
+    public void fly(Player source) {
+        if (source.isFlying()) {
+            source.setFlying(false);
+            source.setAllowFlight(false);
+            source.sendMessage(Component.translatable("essentials.fly.disabled"));
         } else {
-            source.source().setAllowFlight(true);
-            source.source().setFlying(true);
-            source.source().sendMessage(Component.translatable("essentials.fly.enabled"));
+            source.setAllowFlight(true);
+            source.setFlying(true);
+            source.sendMessage(Component.translatable("essentials.fly.enabled"));
         }
     }
-
-
 }

@@ -1,34 +1,28 @@
 package de.kalypzo.essentials.command.user;
 
-
-import de.kalypzo.essentials.command.CommandLoader;
 import org.bukkit.Sound;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.annotations.CommandDescription;
-import org.incendo.cloud.annotations.Permission;
-import org.incendo.cloud.annotations.processing.CommandContainer;
-import org.incendo.cloud.bukkit.data.SinglePlayerSelector;
-import org.incendo.cloud.paper.util.sender.PlayerSource;
+import org.bukkit.entity.Player;
+import studio.mevera.imperat.annotations.types.Description;
+import studio.mevera.imperat.annotations.types.Execute;
+import studio.mevera.imperat.annotations.types.Permission;
+import studio.mevera.imperat.annotations.types.RootCommand;
 
-/**
- * <p>Because of @CommandContainer it gets instantiated by {@link CommandLoader}</p>
- */
-@CommandContainer
+@RootCommand({"enderchest", "ec"})
 public class EnderchestCommand {
 
-    @Command("enderchest|ec")
+    @Execute
     @Permission("essentials.command.enderchest")
-    @CommandDescription("Öffnet deine Enderchest")
-    public void openOtherEnderchest(PlayerSource sender) {
-        sender.source().openInventory(sender.source().getEnderChest());
-        sender.source().playSound(sender.source(), Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1.2f);
+    @Description("Öffnet deine Enderchest")
+    public void openEnderchest(Player sender) {
+        sender.openInventory(sender.getEnderChest());
+        sender.playSound(sender, Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1.2f);
     }
 
-    @Command("enderchest|ec <player>")
+    @Execute
     @Permission("essentials.command.enderchest.other")
-    @CommandDescription("Öffnet die Enderchest eines Spielers")
-    public void openOtherEnderchest(PlayerSource sender, SinglePlayerSelector player) {
-        sender.source().openInventory(player.single().getEnderChest());
-        sender.source().playSound(sender.source(), Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1.2f);
+    @Description("Öffnet die Enderchest eines Spielers")
+    public void openOtherEnderchest(Player sender, Player player) {
+        sender.openInventory(player.getEnderChest());
+        sender.playSound(sender, Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1.2f);
     }
 }

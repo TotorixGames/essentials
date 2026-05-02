@@ -4,7 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.kalypzo.essentials.broadcast.BroadcastManager;
 import de.kalypzo.essentials.chat.ChatSystem;
-import de.kalypzo.essentials.command.CommandLoader;
+import de.kalypzo.essentials.command.ImperatCommandLoader;
 import de.kalypzo.essentials.environment.DefaultPluginEnvironment;
 import de.kalypzo.essentials.environment.PluginEnvironment;
 import de.kalypzo.essentials.listener.DeathListener;
@@ -128,7 +128,7 @@ public class EssentialsPlugin extends JavaPlugin {
         RemoteCommandExecutor.getInstance().init(pubSub);
         getSLF4JLogger().info("All pub sub components initialized. Client subscribed to: {}", pubSub.sync().pubsubChannels());
         new LocaleLoader(this, getClassLoader()).loadLocales();
-        new CommandLoader(this);
+        new ImperatCommandLoader(this).load();
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new DeathListener(BackManager.getInstance()), this);
         pm.registerEvents(new JoinSpawnLocationListener(), this);

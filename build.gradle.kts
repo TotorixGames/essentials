@@ -89,10 +89,9 @@ dependencies {
 
     // sucks when provided
     implementation("io.lettuce:lettuce-core:7.5.1.RELEASE")
-    paperLibrary("org.incendo:cloud-core:2.0.0")
-    paperLibrary("org.incendo:cloud-annotations:2.0.0")
-    annotationProcessor("org.incendo:cloud-annotations:2.0.0")
-    paperLibrary("org.incendo:cloud-paper:2.0.0-beta.14")
+
+    paperLibrary("studio.mevera:imperat-core:3.6.0")
+    paperLibrary("studio.mevera:imperat-bukkit:3.6.0")
 
 
 }

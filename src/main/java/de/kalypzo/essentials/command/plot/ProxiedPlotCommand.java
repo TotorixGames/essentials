@@ -6,19 +6,16 @@ import de.kalypzo.essentials.rce.RemoteCommandCall;
 import de.kalypzo.essentials.user.EssentialsOfflineUser;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
-import org.incendo.cloud.annotations.Command;
-import org.incendo.cloud.context.CommandContext;
-import org.incendo.cloud.paper.util.sender.PlayerSource;
-import org.incendo.cloud.paper.util.sender.Source;
-import org.jspecify.annotations.Nullable;
+import org.bukkit.entity.Player;
+import studio.mevera.imperat.annotations.types.Optional;
+import studio.mevera.imperat.annotations.types.PathwayCommand;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows to run plot-squared commands on a different server.
- * <p>
- * Registered conditionally if Plot-Squared is not present and proxying is enabled in the config. Proxies plot commands to a different server, where the plot plugin is installed.
+ * Allows running plot-squared commands on a different server.
+ * Registered conditionally if Plot-Squared is not present and proxying is enabled in the config.
  */
 public class ProxiedPlotCommand {
     private final String serverName;
@@ -29,30 +26,25 @@ public class ProxiedPlotCommand {
         this.environment = EssentialsPlugin.environment();
     }
 
-    @Command("plot|p a")
-    @Command("plot|p auto")
-    public CompletableFuture<Void> proxy(PlayerSource source, CommandContext<Source> ctx) {
-        return proxyCommand(source.source().getUniqueId(), ctx.rawInput().input(), source.source());
+    @PathwayCommand({"plot|p a", "plot|p auto"})
+    public CompletableFuture<Void> proxy(Player source) {
+        return proxyCommand(source.getUniqueId(), "plot auto", source);
     }
 
-    @Command("plot|p home [plot]")
-    @Command("plot|p h [plot]")
-    public CompletableFuture<Void> proxyHome(PlayerSource source, CommandContext<Source> ctx, @Nullable Integer plot) {
-        return proxyCommand(source.source().getUniqueId(), ctx.rawInput().input(), source.source());
+    @PathwayCommand({"plot|p home [plot]", "plot|p h [plot]"})
+    public CompletableFuture<Void> proxyHome(Player source, @Optional Integer plot) {
+        String command = "plot home" + (plot != null ? " " + plot : "");
+        return proxyCommand(source.getUniqueId(), command, source);
     }
 
-    @Command("plot|p visit <player> [plot]")
-    @Command("plot|p v <player> [plot]")
-    public CompletableFuture<Void> proxyVisit(PlayerSource source, CommandContext<Source> ctx, EssentialsOfflineUser player, @Nullable Integer plot) {
-        return proxyCommand(source.source().getUniqueId(), ctx.rawInput().input(), source.source());
+    @PathwayCommand({"plot|p visit <player> [plot]", "plot|p v <player> [plot]"})
+    public CompletableFuture<Void> proxyVisit(Player source, EssentialsOfflineUser player, @Optional Integer plot) {
+        String command = "plot visit " + player.getName() + (plot != null ? " " + plot : "");
+        return proxyCommand(source.getUniqueId(), command, source);
     }
-
 
     private CompletableFuture<Void> proxyCommand(UUID playerId, String command, CommandSender sender) {
-        return environment.connectPlayerToServer(playerId, serverName).thenAccept((success) -> {
-            sender.sendActionBar(Component.translatable("essentials.plot.connect.failed"));
-            RemoteCommandCall.player(playerId, serverName, command).executeNow();
-        });
+        return environment.connectPlayerToServer(playerId, serverName).thenAccept(success ->
+                RemoteCommandCall.player(playerId, serverName, command).executeNow());
     }
-
 }
