@@ -7,6 +7,8 @@ import de.kalypzo.essentials.environment.PluginEnvironment;
 import de.kalypzo.essentials.exception.ComponentException;
 import de.kalypzo.essentials.exception.TransactionException;
 import de.kalypzo.essentials.user.EssentialsOfflineUser;
+import de.kalypzo.essentials.user.EssentialsUser;
+import de.kalypzo.essentials.user.OnlineUsers;
 import de.kalypzo.essentials.user.leaderboard.BalanceTopPostgresAccessor;
 import de.kalypzo.essentials.util.NumberFormatter;
 import it.einjojo.economy.EconomyService;
@@ -23,6 +25,7 @@ import org.incendo.cloud.paper.util.sender.PlayerSource;
 import org.incendo.cloud.paper.util.sender.Source;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -67,9 +70,48 @@ public class MoneyCommand {
     }
 
 
+    @Command("pay <players> <amount>")
+    @CommandDescription("überweise Geld an mehrere Spieler")
+    public CompletableFuture<Void> payMulti(PlayerSource sender, OnlineUsers players, int amount) {
+        if (amount < 1) {
+            throw ComponentException.translatable("essentials.money.pay.amount-too-low");
+        }
+
+        UUID senderUuid = sender.source().getUniqueId();
+        List<EssentialsUser> recipients = players.users().stream()
+                .filter(u -> !u.getUuid().equals(senderUuid))
+                .toList();
+
+        if (recipients.isEmpty()) {
+            throw ComponentException.translatable("essentials.money.pay.no-targets");
+        }
+
+        int total = amount * recipients.size();
+
+        return economyService.withdraw(senderUuid, total, "pay to " + recipients.size() + " players")
+                .thenCompose(result -> {
+                    if (!result.isSuccess()) {
+                        throw new TransactionException(result.status());
+                    }
+
+                    CompletableFuture<?>[] deposits = recipients.stream()
+                            .map(user -> economyService.deposit(user.getUuid(), amount, "pay from " + sender.source().getName())
+                                    .thenAccept(ignored -> notifyPaymentReceive(user.getUuid(), sender.source().displayName(), amount)))
+                            .toArray(CompletableFuture[]::new);
+
+                    return CompletableFuture.allOf(deposits)
+                            .thenRun(() -> sender.source().sendMessage(Component.translatable(
+                                    "essentials.money.pay.multi.sent",
+                                    Argument.numeric("count", recipients.size()),
+                                    Argument.numeric("amount", amount),
+                                    Argument.numeric("total", total)
+                            )));
+                });
+    }
+
     @Command("pay <player> <amount>")
     @CommandDescription("Überweise Geld an einen Spieler")
-    public CompletableFuture<Void> pay(PlayerSource sender, EssentialsOfflineUser player, int amount) {
+    public CompletableFuture<Void> paySingle(PlayerSource sender, EssentialsOfflineUser player, int amount) {
         if (amount < 1) {
             throw ComponentException.translatable("essentials.money.pay.amount-too-low");
         }

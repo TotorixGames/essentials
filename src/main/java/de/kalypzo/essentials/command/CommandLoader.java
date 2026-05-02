@@ -46,6 +46,7 @@ public class CommandLoader {
         commandManager.parserRegistry().registerParser(HomeParser.descriptor());
         commandManager.parserRegistry().registerParser(WarpParser.descriptor());
         commandManager.parserRegistry().registerParser(GameModeParser.descriptor());
+        commandManager.parserRegistry().registerParser(OnlineUsersParser.descriptor(plugin.getEnvironment()));
 
         registerExceptionControllers(commandManager);
         AnnotationParser<Source> parser = new AnnotationParser<>(commandManager, Source.class);
