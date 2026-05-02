@@ -1,3 +1,4 @@
+llm/
 container/
 !container/paper/config/paper-global.yml
 !container/paper/plugins/PlayerApi
