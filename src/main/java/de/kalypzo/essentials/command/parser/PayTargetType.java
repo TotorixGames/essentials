@@ -4,6 +4,7 @@ import de.kalypzo.essentials.environment.PluginEnvironment;
 import de.kalypzo.essentials.exception.ComponentException;
 import de.kalypzo.essentials.user.OnlineUsers;
 import it.einjojo.playerapi.PlayerApiProvider;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import studio.mevera.imperat.BukkitCommandSource;
 import studio.mevera.imperat.command.arguments.Argument;
@@ -28,7 +29,8 @@ public class PayTargetType extends ArgumentType<BukkitCommandSource, PayTarget> 
 
     @Override
     public PayTarget parse(CommandContext<BukkitCommandSource> ctx, Argument<BukkitCommandSource> arg, String input) throws CommandException {
-        if (input.equals(WILDCARD_ALL_ALT)) {
+        Player sender = ctx.source().asPlayer();
+        if (input.equals(WILDCARD_ALL_ALT) && (sender == null || sender.hasPermission("essentials.command.pay.all"))) {
             return new PayTarget.Multi(new OnlineUsers(environment.getUsers().join(), true));
         }
         // try as offline player
