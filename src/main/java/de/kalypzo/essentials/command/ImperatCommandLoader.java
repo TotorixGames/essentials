@@ -25,6 +25,8 @@ import it.einjojo.economy.exception.EconomyException;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import studio.mevera.imperat.BukkitImperat;
+import studio.mevera.imperat.exception.InvalidSyntaxException;
+import studio.mevera.imperat.util.UsageFormatting;
 
 import java.util.Locale;
 
@@ -66,6 +68,24 @@ public class ImperatCommandLoader {
         imperat.config().setErrorHandler(EconomyException.class, (ex, ctx) -> {
             plugin.getSLF4JLogger().error("Economy error by {}", ctx.source().name(), ex);
             ctx.source().origin().sendMessage(Component.translatable("essentials.economy.error", Component.text("")));
+        });
+        imperat.config().setErrorHandler(InvalidSyntaxException.class, (e, ctx) -> {
+            var player = ctx.source().asPlayer();
+            if (player != null) {
+                var suggestion = e.getClosestUsage();
+                if (suggestion != null) {
+                    String closestUsageFormat = UsageFormatting.formatClosestUsage(
+                            ctx.imperatConfig().commandPrefix(),
+                            ctx.getRootCommandLabelUsed(),
+                            suggestion
+                    );
+                    player.sendMessage(Text.deserialize("<prefix> <p>Meintest du " + closestUsageFormat));
+                } else {
+                    player.sendMessage(Text.deserialize("<prefix> <ex>Ungültiger Befehl: <p>" + e.getInvalidUsage()));
+                }
+            } else {
+                ctx.source().error(e.getMessage());
+            }
         });
         imperat.config().setErrorHandler(TransactionException.class, (ex, ctx) -> {
             var status = ex.getStatus();
