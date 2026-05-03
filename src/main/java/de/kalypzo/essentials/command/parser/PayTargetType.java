@@ -2,15 +2,13 @@ package de.kalypzo.essentials.command.parser;
 
 import de.kalypzo.essentials.environment.PluginEnvironment;
 import de.kalypzo.essentials.exception.ComponentException;
-import de.kalypzo.essentials.user.EssentialsUser;
 import de.kalypzo.essentials.user.OnlineUsers;
 import it.einjojo.playerapi.PlayerApiProvider;
-import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
 import studio.mevera.imperat.BukkitCommandSource;
 import studio.mevera.imperat.command.arguments.Argument;
 import studio.mevera.imperat.command.arguments.type.ArgumentType;
 import studio.mevera.imperat.context.CommandContext;
-import studio.mevera.imperat.context.SuggestionContext;
 import studio.mevera.imperat.exception.CommandException;
 import studio.mevera.imperat.providers.SuggestionProvider;
 
@@ -18,10 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@NullMarked
 public class PayTargetType extends ArgumentType<BukkitCommandSource, PayTarget> {
-    private static final String WILDCARD_ALL = "*";
-    private static final String WILDCARD_ALL_ALT = "@a";
-    private static final String WILDCARD_LOCAL = "@local";
+    private static final String WILDCARD_ALL_ALT = "*";
 
     private final PluginEnvironment environment;
 
@@ -31,14 +28,8 @@ public class PayTargetType extends ArgumentType<BukkitCommandSource, PayTarget> 
 
     @Override
     public PayTarget parse(CommandContext<BukkitCommandSource> ctx, Argument<BukkitCommandSource> arg, String input) throws CommandException {
-        if (input.equals(WILDCARD_ALL) || input.equals(WILDCARD_ALL_ALT)) {
+        if (input.equals(WILDCARD_ALL_ALT)) {
             return new PayTarget.Multi(new OnlineUsers(environment.getUsers().join(), true));
-        }
-        if (input.equals(WILDCARD_LOCAL)) {
-            List<EssentialsUser> localUsers = Bukkit.getOnlinePlayers().stream()
-                    .map(environment::adaptLocalPlayer)
-                    .toList();
-            return new PayTarget.Multi(new OnlineUsers(localUsers, true));
         }
         // try as offline player
         if (input.length() == 36) {
@@ -56,16 +47,18 @@ public class PayTargetType extends ArgumentType<BukkitCommandSource, PayTarget> 
 
     @Override
     public SuggestionProvider<BukkitCommandSource> getSuggestionProvider() {
-        return new SuggestionProvider<>() {
-            @Override
-            public List<String> provide(SuggestionContext<BukkitCommandSource> ctx, Argument<BukkitCommandSource> arg) {
-                List<String> suggestions = new ArrayList<>();
-                suggestions.add(WILDCARD_ALL);
+        return (ctx, arg) -> {
+            List<String> suggestions = new ArrayList<>(PlayerApiProvider.getInstance().getOnlinePlayerNames().join());
+            var player = ctx.source().asPlayer();
+            if (player == null) {
                 suggestions.add(WILDCARD_ALL_ALT);
-                suggestions.add(WILDCARD_LOCAL);
-                suggestions.addAll(PlayerApiProvider.getInstance().getOnlinePlayerNames().join());
-                return suggestions;
+            } else {
+                if (player.hasPermission("essentials.command.pay.all")) {
+                    suggestions.add(WILDCARD_ALL_ALT);
+                }
+                suggestions.remove(player.getName());
             }
+            return suggestions;
         };
     }
 }

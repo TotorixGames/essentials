@@ -35,8 +35,8 @@ public class PayCommand {
 
     @Execute
     public CompletableFuture<Void> pay(Player sender, PayTarget players, int amount) {
-        if (players instanceof PayTarget.Multi multi) {
-            return payMulti(sender, multi.users(), amount);
+        if (players instanceof PayTarget.Multi(OnlineUsers users)) {
+            return payMulti(sender, users, amount);
         } else {
             return paySingle(sender, ((PayTarget.Single) players).user(), amount);
         }

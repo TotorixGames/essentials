@@ -40,7 +40,7 @@ public class ImperatCommandLoader {
 
     public ImperatCommandLoader(EssentialsPlugin plugin) {
         this.plugin = plugin;
-        imperat = BukkitImperat.builder(plugin, true).build();
+        imperat = BukkitImperat.builder(plugin, false).build();
     }
 
     public void load() {
