@@ -2,7 +2,7 @@ package de.kalypzo.essentials.command.user;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import de.kalypzo.essentials.EssentialsPlugin;
-import de.kalypzo.essentials.user.cooldown.RedisCooldownManager;
+import de.kalypzo.essentials.command.Cooldowns;
 import de.kalypzo.essentials.util.MainThreadUtil;
 import de.kalypzo.essentials.util.PermissionsRange;
 import de.kalypzo.essentials.util.TagResolvers;
@@ -26,10 +26,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @RootCommand({"head", "skull"})
 public class HeadCommand {
-
-    private static class LAZY {
-        private static final RedisCooldownManager INSTANCE = new RedisCooldownManager(EssentialsPlugin.instance().getRedis().connect(), "head");
-    }
 
     @Execute
     @Description("Gibt dir deinen eigenen Kopf")
@@ -58,7 +54,7 @@ public class HeadCommand {
     private CompletableFuture<Boolean> checkCooldown(Player sender) {
         if (!sender.hasPermission("essentials.cooldown.head.bypass")) {
             return CompletableFuture.supplyAsync(() -> {
-                Duration duration = LAZY.INSTANCE.getCooldown(sender.getUniqueId());
+                Duration duration = Cooldowns.HEAD.getCooldown(sender.getUniqueId());
                 log.info("HeadCooldown check resulted in {} | senderName={} | sender={}", duration, sender.getName(), sender.getUniqueId());
                 if (duration != null) {
                     sender.sendMessage(Text.deserialize("<prefix> <p>Du kannst in <duration> einen weiteren Kopf holen!",
@@ -70,7 +66,7 @@ public class HeadCommand {
                     EssentialsPlugin.instance().getComponentLogger().warn("Player {}({}) has no cooldown permission configured and does not have a bypass. Using 1 DAY", sender.getUniqueId(), sender.getName());
                     cooldownDays = 1;
                 }
-                LAZY.INSTANCE.setCooldown(sender.getUniqueId(), Duration.ofDays(cooldownDays));
+                Cooldowns.HEAD.setCooldown(sender.getUniqueId(), Duration.ofDays(cooldownDays));
                 return true;
             }, EssentialsPlugin.getExecutorService());
         }

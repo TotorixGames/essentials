@@ -67,9 +67,11 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.2")
     compileOnly("net.luckperms:api:5.5")
 
-    paperLibrary("xyz.xenondevs.invui:invui-core:1.49")
     paperLibrary("xyz.xenondevs.invui:inventory-access-r22:1.49")
+    paperLibrary("xyz.xenondevs.invui:invui-core:1.49")
     paperLibrary("xyz.xenondevs.invui:inventory-access-r26:1.49")
+    paperLibrary("studio.mevera:imperat-core:3.6.0")
+    paperLibrary("studio.mevera:imperat-bukkit:3.6.0")
 
     paperLibrary("com.zaxxer:HikariCP:7.0.2")
     paperLibrary("org.postgresql:postgresql:42.7.10")
@@ -89,9 +91,6 @@ dependencies {
 
     // sucks when provided
     implementation("io.lettuce:lettuce-core:7.5.1.RELEASE")
-
-    paperLibrary("studio.mevera:imperat-core:3.6.0")
-    paperLibrary("studio.mevera:imperat-bukkit:3.6.0")
 
 
 }

@@ -1,7 +1,7 @@
 package de.kalypzo.essentials.command.user;
 
 import de.kalypzo.essentials.EssentialsPlugin;
-import de.kalypzo.essentials.user.cooldown.RedisCooldownManager;
+import de.kalypzo.essentials.command.Cooldowns;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.translation.Argument;
@@ -27,7 +27,7 @@ public class FeedCommand {
 
     @Execute
     public void feed(Player source) {
-        Duration remaining = FeedCooldown.INSTANCE.getCooldown(source.getUniqueId());
+        Duration remaining = Cooldowns.FEED.getCooldown(source.getUniqueId());
         if (remaining != null) {
             source.sendMessage(Component.translatable("essentials.feed.cooldown", cooldownArgument(remaining)));
             return;
@@ -45,7 +45,7 @@ public class FeedCommand {
                 source.sendMessage(Component.translatable("essentials.cooldown.unsupported-permission"));
                 return;
             }
-            FeedCooldown.INSTANCE.setCooldown(source.getUniqueId(), cooldown);
+            Cooldowns.FEED.setCooldown(source.getUniqueId(), cooldown);
         }
         source.setFoodLevel(20);
         source.playSound(source, Sound.ENTITY_PLAYER_BURP, 1, 1.2f);
@@ -81,7 +81,5 @@ public class FeedCommand {
         return Argument.component("cooldown", Component.text(DurationFormatUtils.formatDuration(delta, "mm'm' ss's'")));
     }
 
-    private static final class FeedCooldown {
-        private static final RedisCooldownManager INSTANCE = new RedisCooldownManager(EssentialsPlugin.instance().getRedis().connect(), "feed");
-    }
+
 }

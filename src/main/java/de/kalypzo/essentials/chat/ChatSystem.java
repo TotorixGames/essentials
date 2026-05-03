@@ -1,7 +1,6 @@
 package de.kalypzo.essentials.chat;
 
 import com.google.gson.Gson;
-import de.kalypzo.essentials.EssentialsPlugin;
 import de.kalypzo.essentials.command.chat.TeamChatCommand;
 import de.kalypzo.essentials.user.EssentialsUser;
 import de.kalypzo.essentials.user.UserSettings;
@@ -305,24 +304,6 @@ public class ChatSystem implements Listener {
         return null;
     }
 
-    /**
-     * Sendet eine private Nachricht an den letzten Spieler, der dem sender eine Nachricht gesendet hat.
-     *
-     * @param sender  der Spieler, der die Nachricht sendet
-     * @param message die Nachricht
-     */
-    @Blocking
-    public PrivateMessageResult replyToLastMessage(Player sender, String message) {
-        UUID lastMessageSender = getLastMessageSender(sender.getUniqueId());
-        if (lastMessageSender == null) {
-            return PrivateMessageResult.NO_REPLY_TARGET;
-        }
-        Optional<EssentialsUser> target = EssentialsPlugin.environment().getUser(lastMessageSender).join();
-        if (target.isEmpty()) {
-            return PrivateMessageResult.RECEIVER_IS_OFFLINE;
-        }
-        return sendPrivateMessage(sender, target.get(), message);
-    }
 
     /**
      * Sendet eine private Nachricht an einen Spieler.

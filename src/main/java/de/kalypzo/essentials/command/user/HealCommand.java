@@ -1,7 +1,7 @@
 package de.kalypzo.essentials.command.user;
 
 import de.kalypzo.essentials.EssentialsPlugin;
-import de.kalypzo.essentials.user.cooldown.RedisCooldownManager;
+import de.kalypzo.essentials.command.Cooldowns;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.translation.Argument;
@@ -22,7 +22,7 @@ public class HealCommand {
 
     @Execute
     public void heal(Player source) {
-        Duration remaining = HealCooldown.INSTANCE.getCooldown(source.getUniqueId());
+        Duration remaining = Cooldowns.Heal.INSTANCE.getCooldown(source.getUniqueId());
         if (remaining != null) {
             source.sendMessage(Component.translatable("essentials.heal.cooldown", cooldownArgument(remaining)));
             return;
@@ -38,7 +38,7 @@ public class HealCommand {
                 source.sendMessage(Component.translatable("essentials.heal.unsupported-permission"));
                 return;
             }
-            HealCooldown.INSTANCE.setCooldown(source.getUniqueId(), cooldown);
+            Cooldowns.Heal.INSTANCE.setCooldown(source.getUniqueId(), cooldown);
         }
         source.setHealth(20);
         source.setFoodLevel(20);
@@ -51,7 +51,5 @@ public class HealCommand {
         return Argument.component("cooldown", Component.text(DurationFormatUtils.formatDuration(delta, "mm'm' ss's'")));
     }
 
-    private static final class HealCooldown {
-        private static final RedisCooldownManager INSTANCE = new RedisCooldownManager(EssentialsPlugin.instance().getRedis().connect(), "heal");
-    }
+
 }

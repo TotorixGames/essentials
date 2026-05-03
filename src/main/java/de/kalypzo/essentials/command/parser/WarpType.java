@@ -3,16 +3,17 @@ package de.kalypzo.essentials.command.parser;
 import de.kalypzo.essentials.exception.ComponentException;
 import de.kalypzo.essentials.world.warps.Warp;
 import de.kalypzo.essentials.world.warps.WarpManager;
+import org.jspecify.annotations.NullMarked;
 import studio.mevera.imperat.BukkitCommandSource;
 import studio.mevera.imperat.command.arguments.Argument;
 import studio.mevera.imperat.command.arguments.type.ArgumentType;
 import studio.mevera.imperat.context.CommandContext;
-import studio.mevera.imperat.context.SuggestionContext;
 import studio.mevera.imperat.exception.CommandException;
 import studio.mevera.imperat.providers.SuggestionProvider;
 
 import java.util.List;
 
+@NullMarked
 public class WarpType extends ArgumentType<BukkitCommandSource, Warp> {
 
     @Override
@@ -23,11 +24,6 @@ public class WarpType extends ArgumentType<BukkitCommandSource, Warp> {
 
     @Override
     public SuggestionProvider<BukkitCommandSource> getSuggestionProvider() {
-        return new SuggestionProvider<>() {
-            @Override
-            public List<String> provide(SuggestionContext<BukkitCommandSource> ctx, Argument<BukkitCommandSource> arg) {
-                return List.copyOf(WarpManager.getInstance().getWarpNames());
-            }
-        };
+        return (ctx, arg) -> List.copyOf(WarpManager.getInstance().getWarpNames());
     }
 }

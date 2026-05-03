@@ -2,28 +2,33 @@ package de.kalypzo.essentials.command.chat;
 
 import de.kalypzo.essentials.EssentialsPlugin;
 import de.kalypzo.essentials.chat.ChatSystem;
-import org.bukkit.Bukkit;
+import de.kalypzo.essentials.chat.PrivateMessageResult;
+import de.kalypzo.essentials.user.EssentialsUser;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import studio.mevera.imperat.annotations.types.Execute;
-import studio.mevera.imperat.annotations.types.Greedy;
-import studio.mevera.imperat.annotations.types.Permission;
-import studio.mevera.imperat.annotations.types.RootCommand;
+import studio.mevera.imperat.annotations.types.*;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import java.util.UUID;
 
 @RootCommand({"r", "reply"})
 @Permission("essentials.command.reply")
 public class ReplyCommand {
     private final ChatSystem chatSystem = EssentialsPlugin.instance().getChatSystem();
-    private final JavaPlugin schedulerExecutor = EssentialsPlugin.instance();
 
     @Execute
-    public CompletableFuture<Void> reply(Player sender, @Greedy String message) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        Bukkit.getServer().getScheduler().runTaskAsynchronously(schedulerExecutor, () -> {
-            MsgCommand.handlePrivateMessageResult(chatSystem.replyToLastMessage(sender, message), future, null);
-        });
-        return future;
+    @Async
+    public void reply(Player sender, @Greedy String message) {
+        UUID lastMessageSender = chatSystem.getLastMessageSender(sender.getUniqueId());
+        if (lastMessageSender == null) {
+            MsgCommand.handlePrivateMessageResult(PrivateMessageResult.NO_REPLY_TARGET, null);
+            return;
+        }
+        Optional<EssentialsUser> target = EssentialsPlugin.environment().getUser(lastMessageSender).join();
+        if (target.isEmpty()) {
+            MsgCommand.handlePrivateMessageResult(PrivateMessageResult.RECEIVER_IS_OFFLINE, null);
+            return;
+        }
+        var result = chatSystem.sendPrivateMessage(sender, target.get(), message);
+        MsgCommand.handlePrivateMessageResult(result, target.get().getName());
     }
 }
