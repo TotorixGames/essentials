@@ -84,9 +84,15 @@ public interface PluginEnvironment {
      * @return a CompletableFuture that will complete with a list of matching player names
      */
     default CompletableFuture<List<String>> suggestOfflinePlayerNames(String input, UUID querying) {
-        return suggestOfflinePlayerNames(input, querying, 10);
+        return suggestOfflinePlayerNames(input, querying, 12);
     }
 
 
     CompletableFuture<List<String>> suggestOfflinePlayerNames(String input, UUID querying, int limit);
+
+    default CompletableFuture<List<String>> suggestOnlinePlayerNames(String input, UUID querying) {
+        return suggestOnlinePlayerNames(input, querying, 12);
+    }
+
+    CompletableFuture<List<String>> suggestOnlinePlayerNames(String input, UUID querying, int limit);
 }

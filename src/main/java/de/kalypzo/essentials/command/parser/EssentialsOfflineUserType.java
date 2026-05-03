@@ -7,11 +7,9 @@ import studio.mevera.imperat.BukkitCommandSource;
 import studio.mevera.imperat.command.arguments.Argument;
 import studio.mevera.imperat.command.arguments.type.ArgumentType;
 import studio.mevera.imperat.context.CommandContext;
-import studio.mevera.imperat.context.SuggestionContext;
 import studio.mevera.imperat.exception.CommandException;
 import studio.mevera.imperat.providers.SuggestionProvider;
 
-import java.util.List;
 import java.util.UUID;
 
 public class EssentialsOfflineUserType extends ArgumentType<BukkitCommandSource, EssentialsOfflineUser> {
@@ -39,12 +37,9 @@ public class EssentialsOfflineUserType extends ArgumentType<BukkitCommandSource,
 
     @Override
     public SuggestionProvider<BukkitCommandSource> getSuggestionProvider() {
-        return new SuggestionProvider<>() {
-            @Override
-            public List<String> provide(SuggestionContext<BukkitCommandSource> ctx, Argument<BukkitCommandSource> arg) {
-                UUID playerUuid = ctx.source().isConsole() ? null : ctx.source().asPlayer().getUniqueId();
-                return environment.suggestOfflinePlayerNames(ctx.getArgToComplete().value(), playerUuid).join();
-            }
+        return (ctx, arg) -> {
+            UUID playerUuid = ctx.source().isConsole() ? null : ctx.source().asPlayer().getUniqueId();
+            return environment.suggestOfflinePlayerNames(ctx.getArgToComplete().value(), playerUuid).join();
         };
     }
 }
