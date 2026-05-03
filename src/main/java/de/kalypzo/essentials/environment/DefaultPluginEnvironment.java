@@ -5,18 +5,19 @@ import de.kalypzo.essentials.user.EssentialsOfflineUser;
 import de.kalypzo.essentials.user.EssentialsUser;
 import de.kalypzo.essentials.user.NetworkEssentialsOfflineUser;
 import de.kalypzo.essentials.user.NetworkEssentialsUser;
-import de.kalypzo.essentials.util.FuzzySearch;
 import de.kalypzo.essentials.util.servername.InternalServerName;
 import it.einjojo.playerapi.PlayerApi;
 import it.einjojo.playerapi.PlayerApiProvider;
 import it.einjojo.playerapi.ServerConnectResult;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -108,20 +109,11 @@ public class DefaultPluginEnvironment implements PluginEnvironment {
 
     @Override
     public CompletableFuture<List<String>> suggestOfflinePlayerNames(String input, @Nullable UUID querying, int limit) {
-
-        // Collect all offline player names, excluding the querying player
-        List<String> candidateNames;
-        candidateNames = Arrays.stream(Bukkit.getOfflinePlayers())
-                .map(org.bukkit.OfflinePlayer::getName)
-                .filter(Objects::nonNull)
-                .toList();
-        if (input == null || input.trim().isEmpty() || limit <= 0) {
-            return CompletableFuture.completedFuture(candidateNames.stream().limit(limit).toList());
-        }
-        // Use fuzzy search to rank and filter matches (case-insensitive)
-        List<String> suggestions = FuzzySearch.suggest(input, candidateNames, limit);
-
-        return CompletableFuture.completedFuture(suggestions);
+        return playerApi.tabCompleteOfflinePlayers(input, querying, limit);
     }
 
+    @Override
+    public CompletableFuture<List<String>> suggestOnlinePlayerNames(String input, UUID querying, int limit) {
+        return playerApi.tabCompleteOnlinePlayers(input, querying, limit);
+    }
 }
